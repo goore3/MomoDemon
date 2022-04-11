@@ -25,8 +25,10 @@ int main(int argc, char* argv[])
 	struct dirent *file, *file2;
 	while((file = readdir(src)) != NULL){
 		found = false;
+		//wraca kolejke na sam poczatek folderu B
 		rewinddir(dest);
 		while((file2 = readdir(dest)) != NULL){
+			//porownuje pliki z folderu A i B
 			if(strcmp(file->d_name, file2->d_name) == 0 && strcmp(file->d_name, ".") != 0 && strcmp(file->d_name, "..") != 0){
 				found = true;
 				strcat(path, file->d_name);
@@ -38,11 +40,13 @@ int main(int argc, char* argv[])
 				stat(path2, &statbuf2);
 				//chdir("~/A/");
 				printf("Znaleziono plik %ld", statbuf.st_ino);
+				//tu bedzie sprawdzanie daty modyfikacji za pomoca stat
 				break;
 			}
 		}
-
+		
 		if(S_ISDIR(statbuf.st_mode) != 0){printf("Obiekt %s jest folderem\n", file->d_name);}
+		//w razie nie znalezienia pliku w folderze B bedzie on kopiowany, tu wlasnie nie dziala S_ISDIR(pomocy)
 		if(!found && strcmp(file->d_name, ".") != 0 && strcmp(file->d_name, "..") != 0 && S_ISDIR(statbuf.st_mode) == 0){printf("Kopiujemy plik %s do %s\n", file->d_name, d);}
 	}
 
