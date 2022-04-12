@@ -55,13 +55,37 @@ static void init_signals(void)
 
 int main()
 {
+	/*
+pid_t oldPID;
+	pid_t newPID;
+
+	oldPID = init_demon();
+	init_signals();	
+
+	
+	newPID = fork();
+
+	if (newPID < 0)
+		exit(EXIT_FAILURE);
+	if (newPID > 0){
+
+	}
+	if (newPID == 0) {
+		while(killSignal==0) {
+			syslog (LOG_NOTICE, "DEMON ODPALONY");
+			pause();
+		}
+	}
+	*/
+
 	init_demon();
 	init_signals();	
 
 	while(killSignal==0)
 	{
 		syslog (LOG_NOTICE, "DEMON ODPALONY");
-		sleep(20);
+		sleep(5);
+		//pause();
 	}
 
 	syslog(LOG_NOTICE, "DEMON UŚMIERCONY");
