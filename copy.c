@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <stdbool.h>
+#include <time.h>
 
 int main(int argc, char* argv[])
 {
@@ -14,40 +15,37 @@ int main(int argc, char* argv[])
 	DIR *src, *dest;
 	struct stat statbuf;
 	struct stat statbuf2;
-	char  path[100], path2[100];
+	char  src_path[100], dest_path[100];
 	char s[] = "A/", d[] = "B/";
-	//chmod(s, S_IXOTH);
-	//chmod(d, S_IXOTH);
 	src = opendir(s);
 	dest = opendir(d);
-	strcpy(path, s);
-	strcpy(path2, d);
 	struct dirent *file, *file2;
+	char date[36];
 	while((file = readdir(src)) != NULL){
 		found = false;
-		//wraca kolejke na sam poczatek folderu B
+		//wraca wskaznik na poczatek foldera B
 		rewinddir(dest);
 		while((file2 = readdir(dest)) != NULL){
-			//porownuje pliki z folderu A i B
-			if(strcmp(file->d_name, file2->d_name) == 0 && strcmp(file->d_name, ".") != 0 && strcmp(file->d_name, "..") != 0){
+			//porownywanie plikow z folderu A i B
+			if(strcmp(file->d_name, file2->d_name) == 0 && file->d_type != DT_DIR){
 				found = true;
-				strcat(path, file->d_name);
-				strcat(path2, file2->d_name);
-				//printf("before tragedy");
-				//chdir("~/A/");
-				stat(path, &statbuf);
-				//chdir("~/B/");
-				stat(path2, &statbuf2);
-				//chdir("~/A/");
-				printf("Znaleziono plik %ld", statbuf.st_ino);
-				//tu bedzie sprawdzanie daty modyfikacji za pomoca stat
+				//wypisywanie sciezek dla stat
+				strcpy(src_path, s);
+				strcat(src_path, file->d_name);
+				strcpy(dest_path, d);
+				strcat(dest_path, file2->d_name);
+				stat(src_path, &statbuf);
+				stat(dest_path, &statbuf2);
+				//printf("src: %s\ndest: %s\n", src_path, dest_path);
+
+				//porownanie czasu modyfikacji plikow
+				if(statbuf.st_mtime > statbuf2.st_mtime){printf("Nadpisujemy plik %s w folderze B\n", file->d_name);}
+				//printf("Data modyfikacji pliku %s w A: %ld\nData modyfikacji pliku %s w B: %ld\n", file->d_name, statbuf.st_mtime, file2->d_name, statbuf2.st_mtime);
 				break;
 			}
 		}
-		
-		if(S_ISDIR(statbuf.st_mode) != 0){printf("Obiekt %s jest folderem\n", file->d_name);}
-		//w razie nie znalezienia pliku w folderze B bedzie on kopiowany, tu wlasnie nie dziala S_ISDIR(pomocy)
-		if(!found && strcmp(file->d_name, ".") != 0 && strcmp(file->d_name, "..") != 0 && S_ISDIR(statbuf.st_mode) == 0){printf("Kopiujemy plik %s do %s\n", file->d_name, d);}
+		//kopiowanie pliku do folderu B(bedzie)
+		if(!found && file->d_type != DT_DIR){printf("Kopiujemy plik %s do %s\n", file->d_name, d);}
 	}
 
 	closedir(src);
