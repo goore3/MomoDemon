@@ -11,7 +11,7 @@
 
 bool rec = true;
 
-//funkcja odpowiedzialna za kopiowanie i nadpisywanie plikow z katalogu zrod³owego do katalogu docelowego
+//funkcja odpowiedzialna za kopiowanie i nadpisywanie plikow z katalogu zrodÂ³owego do katalogu docelowego
 void copy(char *src_path, char *dest_path)
 {
 	char buf;
@@ -67,7 +67,7 @@ void search(char *s, char *d){
 			strcpy(cmp_path, s);
 			strcat(cmp_path, "/");
 			strcat(cmp_path, file2->d_name);
-			if(first_round && file2->d_type == DT_REG && access(cmp_path, F_OK) == -1){
+			if(first_round && (file2->d_type == DT_REG || file2->d_type == DT_DIR) && access(cmp_path, F_OK) == -1){
 				//usuwanie pliku nieistniejacego w katalogu zrodlowym
 				printf("Plik %s nie istnieje w katalogu zrodlowym\n", file2->d_name);
 			}
