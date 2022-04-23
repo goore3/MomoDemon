@@ -11,8 +11,8 @@
 
 bool rec = true;
 
-//funkcja odpowiedzialna za kopiowanie i nadpisywanie plikow z katalogu zrod³owego do katalogu docelowego
-void copy(char *src_path, char *dest_path)
+//funkcja odpowiedzialna za kopiowanie i nadpisywanie plikow z katalogu zrodÂ³owego do katalogu docelowego
+void copy(char src_path[], char dest_path[])
 {
 	char buf;
 	int src_fd, dest_fd;
@@ -32,7 +32,7 @@ void copy(char *src_path, char *dest_path)
 	close(dest_fd);
 }
 //funkcja odpowiedzialna za przeszukiwanie katalogow, kopiowanie plikow, tworzenie podkatalogow, usuwanie
-void search(char *s, char *d){
+void search(char s[], char d[]){
 	bool found_file, found_dir, first_round = true;
 	DIR *src, *dest;
 	struct stat statbuf;
@@ -119,12 +119,4 @@ void search(char *s, char *d){
 	}
 	closedir(src);
 	closedir(dest);
-}
-
-int main(int argc, char* argv[])
-{
-	char s[] = "A", d[] = "B";
-	search(s, d);
-	
-	return 0;
 }
