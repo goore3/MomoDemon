@@ -14,6 +14,8 @@ volatile int sleepTime = 300;
 volatile int isRecursive = 0;
 volatile int mmapMinSize = 10000;
 volatile int started = 0;
+char source[100];
+char destination[100];
 
 static void init_demon()
 {
@@ -68,18 +70,20 @@ static void init_signals(void)
 static int verifyArguments(int argc, char* argv[]){
 	int opt;
 	if(argc < 3) {
-		printf("Otrzymano %d argument. Minimalna iloœæ parametrów to 2.\n", argc - 1);
+		printf("Otrzymano %d argument. Minimalna iloï¿½ï¿½ parametrï¿½w to 2.\n", argc - 1);
 		return -1;
 	} else {
 		if(access(argv[1],F_OK) != 0 || access(argv[2], F_OK) != 0) {
-			printf("Jedna ze œcie¿ek nie istnieje lub nie móg³a byæ otwarta!\n");
+			printf("Jedna ze ï¿½cieï¿½ek nie istnieje lub nie mï¿½gï¿½a byï¿½ otwarta!\n");
 			return -1;
 		}
 	}
+	strcpy(source, argv[1]);
+	strcpy(destination, argv[2]);
 	regex_t regex;
 	int flag = regcomp(&regex, "^[0-9]*$", REG_EXTENDED);
 	if(flag){
-		printf("Regex nie mog³ byæ skompilowany");
+		printf("Regex nie mogï¿½ byï¿½ skompilowany");
 		return -1;
 	} 
 	while((opt = getopt(argc, argv, "Rs:m:")) != -1){
@@ -104,10 +108,10 @@ static int verifyArguments(int argc, char* argv[]){
 				}
 				break;
 			case ':':
-				printf("Ta opcja wymaga wartoœci!\n");
+				printf("Ta opcja wymaga wartoï¿½ci!\n");
 				break;
 			case '?':
-				printf("Wykryto nieokreœlony argument %c.\n", optopt);
+				printf("Wykryto nieokreï¿½lony argument %c.\n", optopt);
 				break;
 		}
 	}
@@ -118,31 +122,27 @@ static int verifyArguments(int argc, char* argv[]){
 int main(int argc, char* argv[]){
 	int flag = verifyArguments(argc, argv);
 	if(flag!=0){
-		printf("Komenda siê nie wykona³a. Sk³adnia komendy to demon [pathSource] [pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
+		printf("Komenda siÄ™ nie wykonaÅ‚a. SkÅ‚adnia komendy to demon [pathSource] [pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
 		exit(EXIT_FAILURE);
 	}
-	printf("Wykona³ siê demon ");
+	printf("WykonaÅ‚ siÄ™ demon ");
 	if(isRecursive){
 		printf("w trybie rekursywnym. ");
 	} else {
 		printf(".");
 	}
-	printf("Bêdzie siê wykonywa³ co %d sekund ", sleepTime);
-	printf("i minimalna wielkoœæ pliku aby wykorzystaæ funkcjê mmap wynosi %d.\n", mmapMinSize);
+	printf("BÄ™dzie siÄ™ wykonywaÅ‚ co %d sekund ", sleepTime);
+	printf("i minimalna wielkoÅ›Ä‡ pliku aby wykorzystaÄ‡ funkcjÄ™ mmap wynosi %d.\n", mmapMinSize);
 	init_demon();
 	syslog (LOG_NOTICE, "DEMON ODPALONY");
 	init_signals();
-	if(started == 0)
-		search(argv[1], argv[2]);
-	started = 1;
 	while(killSignal==0)
 	{
 		sleep(sleepTime);
-		search(argv[1], argv[2]);
+		search(source, destination);
 		syslog (LOG_NOTICE, "Synchronizacja wykonana");
 	}
-
-	syslog(LOG_NOTICE, "Demon uœmiercony.");
+	syslog(LOG_NOTICE, "Demon uÅ›miercony.");
 	closelog();
 
 	return EXIT_SUCCESS;
