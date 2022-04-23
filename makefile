@@ -1,4 +1,4 @@
-demonik: demon.c demon
+demon: demon.c demon
 	gcc -o demon demon.c
-	./demon
+	cppcheck .
 
