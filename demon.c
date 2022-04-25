@@ -72,108 +72,110 @@ static void init_signals(void)
 }
 
 static int verifyArguments(int argc, char *argv[])
+{
+	int opt;
+	if (argc < 3)
 	{
-		int opt;
-		if (argc < 3)
+		printf("Otrzymano %d argument. Minimalna ilosc parametrow to 2.\n", argc - 1);
+		return -1;
+	}
+	else
+	{
+		if (access(argv[1], F_OK) != 0 || access(argv[2], F_OK) != 0)
 		{
-			printf("Otrzymano %d argument. Minimalna ilosc parametrow to 2.\n", argc - 1);
+			printf("Jedna ze sciezek nie istnieje lub nie mogla byc otwarta!\n");
 			return -1;
 		}
-		else
+	}
+
+	strcpy(sourcePath, argv[1]);
+	strcpy(destinationPath, argv[2]);
+	regex_t regex;
+	if (regcomp(&regex, "^[0-9]*$", REG_EXTENDED))
+	{
+		printf("Regex nie mogl byc skompilowany");
+		return -1;
+	}
+
+	while ((opt = getopt(argc, argv, "Rs:m:")) != -1)
+	{
+		switch (opt)
 		{
-			if (access(argv[1], F_OK) != 0 || access(argv[2], F_OK) != 0)
-			{
-				printf("Jedna ze sciezek nie istnieje lub nie mogla byc otwarta!\n");
-				return -1;
-			}
-		}
-
-		strcpy(sourcePath, argv[1]);
-		strcpy(destinationPath, argv[2]);
-		regex_t regex;
-		if (regcomp(&regex, "^[0-9]*$", REG_EXTENDED))
-			{
-				printf("Regex nie mogl byc skompilowany");
-				return -1;
-			}
-
-			while ((opt = getopt(argc, argv, "Rs:m:")) != -1)
-			{
-				switch (opt)
+			case 'R':
+				isRecursive = 1;
+				break;
+			case 's':
+				if (!regexec(&regex, optarg, 0, NULL, 0))
 				{
-					case 'R':
-						isRecursive = 1;
-						break;
-					case 's':
-						if (!regexec(&regex, optarg, 0, NULL, 0))
-						{
-							sleepTime = atoi(optarg);
-						}
-						else
-						{
-							printf("Zamiast liczby otrzymano %s.\n", optarg);
-							return -1;
-						}
-
-						break;
-					case 'm':
-						if (!regexec(&regex, optarg, 0, NULL, 0))
-						{
-							mmapMinSize = atoi(optarg);
-						}
-						else
-						{
-							printf("Zamiast liczby otrzymano %s.\n", optarg);
-							return -1;
-						}
-
-						break;
-					case ':':
-						printf("Ta opcja wymaga wartosci!\n");
-						break;
-					case '?':
-						printf("Wykryto nieokreslony argument %c.\n", optopt);
-						break;
+					sleepTime = atoi(optarg);
 				}
-			}
+				else
+				{
+					printf("Zamiast liczby otrzymano %s.\n", optarg);
+					return -1;
+				}
 
-			return 0;
+				break;
+			case 'm':
+				if (!regexec(&regex, optarg, 0, NULL, 0))
+				{
+					mmapMinSize = atoi(optarg);
+				}
+				else
+				{
+					printf("Zamiast liczby otrzymano %s.\n", optarg);
+					return -1;
+				}
+
+				break;
+			case ':':
+				printf("Ta opcja wymaga wartosci!\n");
+				break;
+			case '?':
+				printf("Wykryto nieokreslony argument %c.\n", optopt);
+				break;
 		}
+	}
 
-		//demon(pathSource,pathDestination,(*)sleepTime,(*)mmapMinFileSize)
-		int main(int argc, char *argv[])
-		{
-			int errorCode = verifyArguments(argc, argv);
-			if (errorCode != 0)
-			{
-				printf("Komenda siÄ™ nie wykonaÅ‚a. SkÅ‚adnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
-				exit(EXIT_FAILURE);
-			}
+	return 0;
+}
 
-			printf("WykonaÅ‚ siÄ™ demon ");
-			if (isRecursive)
-			{
-				printf("w trybie rekursywnym. ");
-			}
-			else
-			{
-				printf(".");
-			}
+//demon(pathSource,pathDestination,(*)sleepTime,(*)mmapMinFileSize)
+int main(int argc, char *argv[])
+{
+	int errorCode = verifyArguments(argc, argv);
+	if (errorCode != 0)
+	{
+		printf("Komenda siê nie wykona³a. Sk³adnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
+		exit(EXIT_FAILURE);
+	}
 
-			printf("BÄ™dzie siÄ™ wykonywaÅ‚ co %d sekund ", sleepTime);
-			printf("i minimalna wielkoÅ›Ä‡ pliku aby wykorzystaÄ‡ funkcjÄ™ mmap wynosi %d.\n", mmapMinSize);
-			init_demon();
-			syslog(LOG_NOTICE, "DEMON ODPALONY");
-			init_signals();
-			while (killSignal == 0)
-			{
-				sleep(sleepTime);
-				search(sourcePath, destinationPath);
-				syslog(LOG_NOTICE, "Synchronizacja wykonana");
-			}
+	printf("Wykona³ siê demon ");
+	if (isRecursive)
+	{
+		printf("w trybie rekursywnym. ");
+	}
+	else
+	{
+		printf(".");
+	}
 
-			syslog(LOG_NOTICE, "Demon uÅ›miercony.");
-			closelog();
+	printf("Bêdzie siê wykonywa³ co %d sekund ", sleepTime);
+	printf("i minimalna wielkoœæ pliku aby wykorzystaæ funkcjê mmap wynosi %d.\n", mmapMinSize);
+	init_demon();
+	syslog(LOG_NOTICE, "DEMON ODPALONY");
+	init_signals();
+	while (killSignal == 0)
+	{
+		syslog(LOG_NOTICE, "Start sleep");	
+		sleep(sleepTime);
+		syslog(LOG_NOTICE, "Argumenty funkcji: %s %s %d %d\n", sourcePath, destinationPath, isRecursive, mmapMinSize);
+		synchronization(sourcePath, destinationPath, isRecursive, mmapMinSize);
+		syslog(LOG_NOTICE, "Synchronizacja wykonana");	
+	}
 
-			return EXIT_SUCCESS;
-		}
+	syslog(LOG_NOTICE, "Demon uœmiercony.");
+	closelog();
+
+	return EXIT_SUCCESS;
+}
