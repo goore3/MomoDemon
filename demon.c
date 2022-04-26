@@ -1,4 +1,4 @@
-#include <stdio.h>
+﻿#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <signal.h>
@@ -76,6 +76,9 @@ static void init_signals(void)
 
 static int verifyArguments(int argc, char *argv[])
 {
+	struct stat sbSrc, sbDest;
+	stat(argv[1], &sbSrc);
+	stat(argv[2], &sbDest);
 	int opt;
 	if (argc < 3)
 	{
@@ -84,7 +87,7 @@ static int verifyArguments(int argc, char *argv[])
 	}
 	else
 	{
-		if (access(argv[1], F_OK) != 0 || access(argv[2], F_OK) != 0)
+		if (!(S_ISDIR(sbSrc.st_mode) && S_ISDIR(sbDest.st_mode)))
 		{
 			printf("Jedna ze sciezek nie istnieje lub nie mogla byc otwarta!\n");
 			return -1;
@@ -168,7 +171,6 @@ int main(int argc, char *argv[])
 	init_demon();
 	syslog(LOG_NOTICE, "DEMON ODPALONY");
 	init_signals();
-	synchronization(sourcePath, destinationPath, isRecursive, mmapMinSize);
 	while (killSignal == 0)
 	{
 		sleep(sleepTime);
