@@ -12,7 +12,7 @@
 volatile int killSignal = 0;
 volatile int sleepTime = 300;
 volatile int isRecursive = 0;
-volatile int mmapMinSize = 10000;
+volatile long int mmapMinSize = 1000000;
 volatile int started = 0;
 char sourcePath[100];
 char destinationPath[100];
@@ -119,7 +119,7 @@ static int verifyArguments(int argc, char *argv[])
 			case 'm':
 				if (!regexec(&regex, optarg, 0, NULL, 0))
 				{
-					mmapMinSize = atoi(optarg);
+					mmapMinSize = atol(optarg);
 				}
 				else
 				{
@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 	}
 
 	printf("Bêdzie siê wykonywa³ co %d sekund ", sleepTime);
-	printf("i minimalna wielkoœæ pliku aby wykorzystaæ funkcjê mmap wynosi %d.\n", mmapMinSize);
+	printf("i minimalna wielkoœæ pliku aby wykorzystaæ funkcjê mmap wynosi %ld bajtów.\n", mmapMinSize);
 	init_demon();
 	syslog(LOG_NOTICE, "DEMON ODPALONY");
 	init_signals();
@@ -169,7 +169,6 @@ int main(int argc, char *argv[])
 	{
 		syslog(LOG_NOTICE, "Start sleep");	
 		sleep(sleepTime);
-		syslog(LOG_NOTICE, "Argumenty funkcji: %s %s %d %d\n", sourcePath, destinationPath, isRecursive, mmapMinSize);
 		synchronization(sourcePath, destinationPath, isRecursive, mmapMinSize);
 		syslog(LOG_NOTICE, "Synchronizacja wykonana");	
 	}
