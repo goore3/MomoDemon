@@ -13,7 +13,7 @@ volatile int killSignal = 0;
 volatile int sleepTime = 300;
 volatile int isRecursive = 0;
 volatile long int mmapMinSize = 1000000;
-volatile int started = 0;
+volatile int wakeUp = 0;
 char sourcePath[100];
 char destinationPath[100];
 
@@ -56,13 +56,16 @@ static void init_demon()
 // TODO: Make it better
 static void kill_dem_demon(int signum)
 {
-	killSignal = 1;
+	exit(EXIT_SUCCESS);
+	syslog(LOG_NOTICE, "Demon uï¿½miercony.");
+	closelog();
 }
 
 //This function will be replaced with the sync function
 static void empty()
 {
-	syslog(LOG_NOTICE, "Wykonaj funkcje");
+	wakeUp = 1;
+	syslog(LOG_NOTICE, "Demon zostaÅ‚ manualnie wybudzony i wykonuje synchronizacje.");
 }
 
 static void init_signals(void)
@@ -146,11 +149,11 @@ int main(int argc, char *argv[])
 	int errorCode = verifyArguments(argc, argv);
 	if (errorCode != 0)
 	{
-		printf("Komenda siê nie wykona³a. Sk³adnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
+		printf("Komenda siï¿½ nie wykonaï¿½a. Skï¿½adnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Wykona³ siê demon ");
+	printf("Wykonaï¿½ siï¿½ demon ");
 	if (isRecursive)
 	{
 		printf("w trybie rekursywnym. ");
@@ -160,20 +163,25 @@ int main(int argc, char *argv[])
 		printf(".");
 	}
 
-	printf("Bêdzie siê wykonywa³ co %d sekund ", sleepTime);
-	printf("i minimalna wielkoœæ pliku aby wykorzystaæ funkcjê mmap wynosi %ld bajtów.\n", mmapMinSize);
+	printf("Bï¿½dzie siï¿½ wykonywaï¿½ co %d sekund ", sleepTime);
+	printf("i minimalna wielkoï¿½ï¿½ pliku aby wykorzystaï¿½ funkcjï¿½ mmap wynosi %ld bajtï¿½w.\n", mmapMinSize);
 	init_demon();
 	syslog(LOG_NOTICE, "DEMON ODPALONY");
 	init_signals();
+	synchronization(sourcePath, destinationPath, isRecursive, mmapMinSize);
 	while (killSignal == 0)
 	{
-		syslog(LOG_NOTICE, "Start sleep");	
 		sleep(sleepTime);
 		synchronization(sourcePath, destinationPath, isRecursive, mmapMinSize);
-		syslog(LOG_NOTICE, "Synchronizacja wykonana");	
+		if(wakeUp == 1){
+			syslog(LOG_NOTICE, "Manualna synchronizacja wykonana");
+			wakeUp = 0;
+		} else {
+			syslog(LOG_NOTICE, "Synchronizacja wykonana");	
+		}
 	}
 
-	syslog(LOG_NOTICE, "Demon uœmiercony.");
+	syslog(LOG_NOTICE, "Demon uï¿½miercony.");
 	closelog();
 
 	return EXIT_SUCCESS;
