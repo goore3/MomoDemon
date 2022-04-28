@@ -54,15 +54,15 @@ static void init_demon()
 }
 
 // TODO: Make it better
-static void kill_dem_demon(int signum)
+static void killDemon()
 {
 	exit(EXIT_SUCCESS);
-	syslog(LOG_NOTICE, "Demon u�miercony.");
+	syslog(LOG_NOTICE, "Demon usmiercony.");
 	closelog();
 }
 
 //This function will be replaced with the sync function
-static void empty()
+static void wakeUpDemon()
 {
 	wakeUp = 1;
 	syslog(LOG_NOTICE, "Demon został manualnie wybudzony i wykonuje synchronizacje.");
@@ -70,8 +70,8 @@ static void empty()
 
 static void init_signals(void)
 {
-	signal(SIGUSR1, empty);
-	signal(SIGUSR2, kill_dem_demon);
+	signal(SIGUSR1, wakeUpDemon);
+	signal(SIGUSR2, killDemon);
 }
 
 static int verifyArguments(int argc, char *argv[])
