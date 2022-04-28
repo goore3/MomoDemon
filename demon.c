@@ -56,9 +56,9 @@ static void initDemon()
 // TODO: Make it better
 static void killDemon()
 {
-	exit(EXIT_SUCCESS);
 	syslog(LOG_NOTICE, "Demon usmiercony.");
 	closelog();
+	exit(EXIT_SUCCESS);
 }
 
 //This function will be replaced with the sync function
