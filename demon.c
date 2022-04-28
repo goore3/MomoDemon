@@ -17,7 +17,7 @@ volatile int wakeUp = 0;
 char sourcePath[100];
 char destinationPath[100];
 
-static void init_demon()
+static void initDemon()
 {
 	pid_t pid;
 
@@ -68,7 +68,7 @@ static void wakeUpDemon()
 	syslog(LOG_NOTICE, "Demon został manualnie wybudzony i wykonuje synchronizacje.");
 }
 
-static void init_signals(void)
+static void initSignals(void)
 {
 	signal(SIGUSR1, wakeUpDemon);
 	signal(SIGUSR2, killDemon);
@@ -168,9 +168,9 @@ int main(int argc, char *argv[])
 
 	printf("Bedzie sie wykonywac co %d sekund ", sleepTime);
 	printf("i minimalna wielkosc pliku aby wykorzystac funkcje mmap wynosi %ld bajtow.\n", mmapMinSize);
-	init_demon();
+	initDemon();
 	syslog(LOG_NOTICE, "DEMON ODPALONY");
-	init_signals();
+	initSignals();
 	while (killSignal == 0)
 	{
 		sleep(sleepTime);
