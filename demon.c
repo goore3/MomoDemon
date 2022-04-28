@@ -152,11 +152,11 @@ int main(int argc, char *argv[])
 	int errorCode = verifyArguments(argc, argv);
 	if (errorCode != 0)
 	{
-		printf("Komenda si� nie wykona�a. Sk�adnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
+		printf("Komenda sie nie wykonala. Skladnia komendy to demon[pathSource][pathDestination] *[-R] *[-s sleepTime] *[-m mmapMinFileSize]\n");
 		exit(EXIT_FAILURE);
 	}
 
-	printf("Wykona� si� demon ");
+	printf("Demon wykona sie ");
 	if (isRecursive)
 	{
 		printf("w trybie rekursywnym. ");
@@ -166,8 +166,8 @@ int main(int argc, char *argv[])
 		printf(".");
 	}
 
-	printf("B�dzie si� wykonywa� co %d sekund ", sleepTime);
-	printf("i minimalna wielko�� pliku aby wykorzysta� funkcj� mmap wynosi %ld bajt�w.\n", mmapMinSize);
+	printf("Bedzie sie wykonywac co %d sekund ", sleepTime);
+	printf("i minimalna wielkosc pliku aby wykorzystac funkcje mmap wynosi %ld bajtow.\n", mmapMinSize);
 	init_demon();
 	syslog(LOG_NOTICE, "DEMON ODPALONY");
 	init_signals();
@@ -183,7 +183,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	syslog(LOG_NOTICE, "Demon u�miercony.");
+	syslog(LOG_NOTICE, "Demon usmiercony.");
 	closelog();
 
 	return EXIT_SUCCESS;
